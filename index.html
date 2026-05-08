@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Invoice Generator</title>
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --primary: #0F0F0F;
+            --secondary: #FF6B35;
+            --accent: #00D9FF;
+            --bg: #FAFAFA;
+            --card: #FFFFFF;
+            --text: #1A1A1A;
+            --text-light: #666666;
+            --border: #E0E0E0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .form-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+        }
+
+        input,
+        textarea {
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--bg);
+            font-family: 'Syne', sans-serif;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 1.25rem 2rem;
+            background: linear-gradient(135deg, var(--secondary) 0%, #FF8C42 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .generate-btn:hover {
+            opacity: 0.95;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>Invoice Generator</h1>
+        <p>Create professional invoices in seconds</p>
+    </div>
+
+    <div class="form-card">
+
+        <div class="section-title">Your Information</div>
+
+        <div class="form-grid">
+
+            <div class="form-group full-width">
+                <label>Your Name</label>
+                <input type="text" id="yourName" value="">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Your Address</label>
+                <textarea id="yourAddress"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>PAN Number</label>
+                <input type="text" id="panNumber" value="">
+            </div>
+
+            <div class="form-group">
+                <label>GSTIN</label>
+                <input type="text" id="gstin" placeholder="-">
+            </div>
+
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="text" id="phone" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" value="">
+            </div>
+
+        </div>
+
+        <div class="section-title">Invoice Details</div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>Invoice Number</label>
+                <input type="text" id="invoiceNumber" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Invoice Date</label>
+                <input type="date" id="invoiceDate" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Due Days</label>
+                <input type="number" id="dueDays" value="">
+            </div>
+
+        </div>
+
+        <div class="section-title">Bill To</div>
+
+        <div class="form-grid">
+
+            <div class="form-group full-width">
+                <label>Client Name</label>
+                <input type="text" id="clientName" value="Scalix Enterprise Solutions LLP">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Client Address</label>
+                <textarea id="clientAddress">Flat No. D-1606, Northern Heights, S.V. Road, Dahisar-East, Mumbai - 400068.</textarea>
+            </div>
+
+        </div>
+
+        <div class="section-title">Service Details</div>
+
+        <div class="form-grid">
+
+            <div class="form-group full-width">
+                <label>Description</label>
+                <input type="text" id="serviceDescription" value="Professional services for the month of March 2026">
+            </div>
+
+            <div class="form-group">
+                <label>Amount (INR)</label>
+                <input type="number" id="amount" value="">
+            </div>
+
+        </div>
+
+        <div class="section-title">Bank Details</div>
+
+        <div class="form-grid">
+
+            <div class="form-group full-width">
+                <label>Account Name</label>
+                <input type="text" id="accountName" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Account Number</label>
+                <input type="text" id="accountNumber" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Account Type</label>
+                <input type="text" id="accountType" value="">
+            </div>
+
+            <div class="form-group">
+                <label>IFSC Code</label>
+                <input type="text" id="ifscCode" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Branch Name</label>
+                <input type="text" id="branchName" value="">
+            </div>
+
+        </div>
+
+        <button class="generate-btn" onclick="generatePDF()">
+            Generate Invoice PDF
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+function formatDate(dateString) {
+
+    const date = new Date(dateString);
+
+    const day = date.getDate();
+
+    const month = date.toLocaleString('en-US', {
+        month: 'short'
+    });
+
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year.toString().slice(-2)}`;
+}
+
+async function generatePDF() {
+
+    try {
+
+        const jsPDF = window.jspdf?.jsPDF;
+
+        if (!jsPDF) {
+            alert("jsPDF failed to load.");
+            return;
+        }
+
+        const doc = new jsPDF('p', 'mm', 'a4');
+
+        // FORM VALUES
+
+        const yourName = document.getElementById('yourName').value;
+        const yourAddress = document.getElementById('yourAddress').value;
+        const panNumber = document.getElementById('panNumber').value;
+        const gstin = document.getElementById('gstin').value || '-';
+        const phone = document.getElementById('phone').value;
+        const email = document.getElementById('email').value;
+
+        const invoiceNumber = document.getElementById('invoiceNumber').value;
+        const invoiceDate = document.getElementById('invoiceDate').value;
+        const dueDays = document.getElementById('dueDays').value;
+
+        const clientName = document.getElementById('clientName').value;
+        const clientAddress = document.getElementById('clientAddress').value;
+
+        const serviceDescription = document.getElementById('serviceDescription').value;
+        const amount = document.getElementById('amount').value;
+
+        const accountName = document.getElementById('accountName').value;
+        const accountNumber = document.getElementById('accountNumber').value;
+        const accountType = document.getElementById('accountType').value;
+        const ifscCode = document.getElementById('ifscCode').value;
+        const branchName = document.getElementById('branchName').value;
+
+        const notes = document.getElementById('notes').value;
+
+        const formattedDate = formatDate(invoiceDate);
+
+        // PDF START
+
+        let yPos = 15;
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+
+        doc.text(
+            yourName.toUpperCase() + ' INVOICE',
+            15,
+            yPos
+        );
+
+        yPos = 25;
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+
+        const addressLines = doc.splitTextToSize(
+            yourAddress,
+            85
+        );
+
+        doc.text(addressLines, 15, yPos);
+
+        doc.text(
+            'DATE : ' + formattedDate,
+            195,
+            25,
+            { align: 'right' }
+        );
+
+        doc.text(
+            'INVOICE # : ' + invoiceNumber,
+            195,
+            30,
+            { align: 'right' }
+        );
+
+        doc.text(
+            'DUE DATE : ' + dueDays + ' days',
+            195,
+            35,
+            { align: 'right' }
+        );
+
+        yPos = 25 + (addressLines.length * 4.5);
+
+        doc.text('PAN : ' + panNumber, 15, yPos);
+
+        yPos += 5;
+
+        doc.text('GSTIN : ' + gstin, 15, yPos);
+
+        yPos += 5;
+
+        doc.text('Phone : ' + phone, 15, yPos);
+
+        yPos += 10;
+
+        doc.setFont('helvetica', 'bold');
+
+        doc.text('Bill To:', 15, yPos);
+
+        yPos += 5;
+
+        doc.setFont('helvetica', 'normal');
+
+        doc.text('Name', 15, yPos);
+
+        yPos += 5;
+
+        doc.setFont('helvetica', 'bold');
+
+        doc.text(clientName, 15, yPos);
+
+        yPos += 5;
+
+        doc.setFont('helvetica', 'normal');
+
+        const clientAddressLines = doc.splitTextToSize(
+            clientAddress,
+            180
+        );
+
+        doc.text(clientAddressLines, 15, yPos);
+
+        yPos += (clientAddressLines.length * 4.5) + 10;
+
+        // TABLE
+
+        const tableStartY = yPos;
+
+        doc.setLineWidth(0.5);
+
+        doc.rect(
+            15,
+            tableStartY,
+            180,
+            30
+        );
+
+        doc.line(
+            15,
+            tableStartY + 8,
+            195,
+            tableStartY + 8
+        );
+
+        doc.line(
+            155,
+            tableStartY,
+            155,
+            tableStartY + 30
+        );
+
+        doc.setFont('helvetica', 'bold');
+
+        doc.setFontSize(10);
+
+        doc.text(
+            'DESCRIPTION',
+            17,
+            tableStartY + 6
+        );
+
+        doc.text(
+            'AMOUNT',
+            157,
+            tableStartY + 6
+        );
+
+        doc.setFont('helvetica', 'normal');
+
+        doc.setFontSize(9);
+
+        const descLines = doc.splitTextToSize(
+            serviceDescription,
+            135
+        );
+
+        doc.text(
+            descLines,
+            17,
+            tableStartY + 14
+        );
+
+        doc.text(
+            'INR ' + parseFloat(amount).toLocaleString('en-IN'),
+            157,
+            tableStartY + 14
+        );
+
+        // TOTAL
+
+        yPos = tableStartY + 35;
+
+        doc.setFont('helvetica', 'bold');
+
+        doc.setFontSize(10);
+
+        doc.text('TOTAL', 17, yPos);
+
+        doc.text(
+            'INR ' + parseFloat(amount).toLocaleString('en-IN'),
+            157,
+            yPos
+        );
+
+        // NOTES
+
+        if (notes) {
+
+            yPos += 10;
+
+            doc.setFont('helvetica', 'bold');
+
+            doc.setFontSize(9);
+
+            doc.text('Notes:', 15, yPos);
+
+            yPos += 5;
+
+            doc.setFont('helvetica', 'normal');
+
+            const notesLines = doc.splitTextToSize(
+                notes,
+                180
+            );
+
+            doc.text(notesLines, 15, yPos);
+
+            yPos += (notesLines.length * 4.5);
+        }
+
+        // SIGNATURE
+
+        yPos += 15;
+
+        doc.setFont('helvetica', 'normal');
+
+        doc.text(accountName, 15, yPos);
+
+        // THANK YOU
+
+        yPos += 10;
+
+        doc.setFont('helvetica', 'bold');
+
+        doc.setFontSize(11);
+
+        doc.text(
+            'THANK YOU FOR YOUR BUSINESS',
+            105,
+            yPos,
+            { align: 'center' }
+        );
+
+        // BANK DETAILS
+
+        yPos += 10;
+
+        doc.setFontSize(8);
+
+        doc.setFont('helvetica', 'normal');
+
+        doc.text(
+            'Email: ' + email,
+            15,
+            yPos
+        );
+
+        yPos += 4;
+
+        doc.text(
+            'A/C NAME: ' + accountName.toUpperCase() +
+            '; A/C NO: ' + accountNumber,
+            15,
+            yPos
+        );
+
+        yPos += 4;
+
+        doc.text(
+            'TYPE: ' + accountType +
+            ' ; NEFT IFSC: ' + ifscCode,
+            15,
+            yPos
+        );
+
+        yPos += 4;
+
+        doc.text(
+            'BRANCH: ' + branchName,
+            15,
+            yPos
+        );
+
+        // FILE NAME
+
+        const fileName =
+            'Invoice_' +
+            invoiceNumber +
+            '_' +
+            yourName.replace(/\s+/g, '_') +
+            '.pdf';
+
+        // PLATFORM-INDEPENDENT DOWNLOAD
+
+        const blob = doc.output('blob');
+
+        const blobUrl = URL.createObjectURL(blob);
+
+        // mobile + desktop compatible
+        const newWindow = window.open(blobUrl);
+
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+
+            // popup blocked fallback
+            const link = document.createElement('a');
+
+            link.href = blobUrl;
+
+            link.download = fileName;
+
+            document.body.appendChild(link);
+
+            link.click();
+
+            document.body.removeChild(link);
+        }
+
+        // final fallback
+        setTimeout(() => {
+            try {
+                doc.save(fileName);
+            } catch (e) {
+                console.error(e);
+            }
+        }, 800);
+
+        console.log("PDF generated successfully");
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            'Error generating PDF: ' +
+            error.message
+        );
+    }
+}
+
+</script>
+
+</body>
+</html>
