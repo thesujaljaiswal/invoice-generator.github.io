@@ -113,20 +113,27 @@
             resize: vertical;
         }
 
-        .generate-btn {
+        .btn {
             width: 100%;
             padding: 1.25rem 2rem;
-            background: linear-gradient(135deg, var(--secondary) 0%, #FF8C42 100%);
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             margin-top: 1rem;
         }
 
-        .generate-btn:hover {
+        .generate-btn {
+            background: linear-gradient(135deg, var(--secondary) 0%, #FF8C42 100%);
+        }
+
+        .clear-btn {
+            background: #222;
+        }
+
+        .btn:hover {
             opacity: 0.95;
         }
 
@@ -159,7 +166,7 @@
 
             <div class="form-group full-width">
                 <label>Your Name</label>
-                <input type="text" id="yourName" value="">
+                <input type="text" id="yourName">
             </div>
 
             <div class="form-group full-width">
@@ -169,22 +176,22 @@
 
             <div class="form-group">
                 <label>PAN Number</label>
-                <input type="text" id="panNumber" value="">
+                <input type="text" id="panNumber">
             </div>
 
             <div class="form-group">
                 <label>GSTIN</label>
-                <input type="text" id="gstin" placeholder="-">
+                <input type="text" id="gstin">
             </div>
 
             <div class="form-group">
                 <label>Phone</label>
-                <input type="text" id="phone" value="">
+                <input type="text" id="phone">
             </div>
 
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" id="email" value="">
+                <input type="email" id="email">
             </div>
 
         </div>
@@ -195,17 +202,17 @@
 
             <div class="form-group">
                 <label>Invoice Number</label>
-                <input type="text" id="invoiceNumber" value="">
+                <input type="text" id="invoiceNumber">
             </div>
 
             <div class="form-group">
                 <label>Invoice Date</label>
-                <input type="date" id="invoiceDate" value="">
+                <input type="date" id="invoiceDate">
             </div>
 
             <div class="form-group">
                 <label>Due Days</label>
-                <input type="number" id="dueDays" value="">
+                <input type="number" id="dueDays">
             </div>
 
         </div>
@@ -216,12 +223,12 @@
 
             <div class="form-group full-width">
                 <label>Client Name</label>
-                <input type="text" id="clientName" value="Scalix Enterprise Solutions LLP">
+                <input type="text" id="clientName">
             </div>
 
             <div class="form-group full-width">
                 <label>Client Address</label>
-                <textarea id="clientAddress">Flat No. D-1606, Northern Heights, S.V. Road, Dahisar-East, Mumbai - 400068.</textarea>
+                <textarea id="clientAddress"></textarea>
             </div>
 
         </div>
@@ -232,12 +239,12 @@
 
             <div class="form-group full-width">
                 <label>Description</label>
-                <input type="text" id="serviceDescription" value="Professional services for the month of March 2026">
+                <input type="text" id="serviceDescription">
             </div>
 
             <div class="form-group">
                 <label>Amount (INR)</label>
-                <input type="number" id="amount" value="">
+                <input type="number" id="amount">
             </div>
 
         </div>
@@ -248,33 +255,48 @@
 
             <div class="form-group full-width">
                 <label>Account Name</label>
-                <input type="text" id="accountName" value="">
+                <input type="text" id="accountName">
             </div>
 
             <div class="form-group">
                 <label>Account Number</label>
-                <input type="text" id="accountNumber" value="">
+                <input type="text" id="accountNumber">
             </div>
 
             <div class="form-group">
                 <label>Account Type</label>
-                <input type="text" id="accountType" value="">
+                <input type="text" id="accountType">
             </div>
 
             <div class="form-group">
                 <label>IFSC Code</label>
-                <input type="text" id="ifscCode" value="">
+                <input type="text" id="ifscCode">
             </div>
 
             <div class="form-group">
                 <label>Branch Name</label>
-                <input type="text" id="branchName" value="">
+                <input type="text" id="branchName">
             </div>
 
         </div>
 
-        <button class="generate-btn" onclick="generatePDF()">
+        <div class="form-group full-width">
+            <label>Notes</label>
+            <textarea id="notes"></textarea>
+        </div>
+
+        <button
+            class="btn generate-btn"
+            onclick="generatePDF()"
+        >
             Generate Invoice PDF
+        </button>
+
+        <button
+            class="btn clear-btn"
+            onclick="clearSavedData()"
+        >
+            Clear Saved Data
         </button>
 
     </div>
@@ -283,7 +305,66 @@
 
 <script>
 
+const STORAGE_KEY = 'invoice_generator_data';
+
+function saveFormData() {
+
+    const formData = {};
+
+    document.querySelectorAll('input, textarea').forEach(field => {
+
+        formData[field.id] = field.value;
+    });
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(formData)
+    );
+}
+
+function loadFormData() {
+
+    const savedData = localStorage.getItem(STORAGE_KEY);
+
+    if (!savedData) return;
+
+    const formData = JSON.parse(savedData);
+
+    Object.keys(formData).forEach(id => {
+
+        const field = document.getElementById(id);
+
+        if (field) {
+            field.value = formData[id];
+        }
+    });
+}
+
+function setupAutoSave() {
+
+    document.querySelectorAll('input, textarea').forEach(field => {
+
+        field.addEventListener('input', saveFormData);
+    });
+}
+
+function clearSavedData() {
+
+    localStorage.removeItem(STORAGE_KEY);
+
+    location.reload();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+
+    loadFormData();
+
+    setupAutoSave();
+});
+
 function formatDate(dateString) {
+
+    if (!dateString) return '';
 
     const date = new Date(dateString);
 
@@ -301,6 +382,8 @@ function formatDate(dateString) {
 async function generatePDF() {
 
     try {
+
+        saveFormData();
 
         const jsPDF = window.jspdf?.jsPDF;
 
@@ -348,7 +431,7 @@ async function generatePDF() {
         doc.setFont('helvetica', 'bold');
 
         doc.text(
-            yourName.toUpperCase() + ' INVOICE',
+            (yourName || '').toUpperCase() + ' INVOICE',
             15,
             yPos
         );
@@ -359,7 +442,7 @@ async function generatePDF() {
         doc.setFont('helvetica', 'normal');
 
         const addressLines = doc.splitTextToSize(
-            yourAddress,
+            yourAddress || '',
             85
         );
 
@@ -488,7 +571,7 @@ async function generatePDF() {
         );
 
         doc.text(
-            'INR ' + parseFloat(amount).toLocaleString('en-IN'),
+            'INR ' + Number(amount || 0).toLocaleString('en-IN'),
             157,
             tableStartY + 14
         );
@@ -504,7 +587,7 @@ async function generatePDF() {
         doc.text('TOTAL', 17, yPos);
 
         doc.text(
-            'INR ' + parseFloat(amount).toLocaleString('en-IN'),
+            'INR ' + Number(amount || 0).toLocaleString('en-IN'),
             157,
             yPos
         );
@@ -602,9 +685,9 @@ async function generatePDF() {
 
         const fileName =
             'Invoice_' +
-            invoiceNumber +
+            (invoiceNumber || '1') +
             '_' +
-            yourName.replace(/\s+/g, '_') +
+            (yourName || 'Invoice').replace(/\s+/g, '_') +
             '.pdf';
 
         // PLATFORM-INDEPENDENT DOWNLOAD
@@ -613,12 +696,14 @@ async function generatePDF() {
 
         const blobUrl = URL.createObjectURL(blob);
 
-        // mobile + desktop compatible
         const newWindow = window.open(blobUrl);
 
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        if (
+            !newWindow ||
+            newWindow.closed ||
+            typeof newWindow.closed === 'undefined'
+        ) {
 
-            // popup blocked fallback
             const link = document.createElement('a');
 
             link.href = blobUrl;
@@ -632,13 +717,17 @@ async function generatePDF() {
             document.body.removeChild(link);
         }
 
-        // final fallback
         setTimeout(() => {
+
             try {
+
                 doc.save(fileName);
+
             } catch (e) {
+
                 console.error(e);
             }
+
         }, 800);
 
         console.log("PDF generated successfully");
